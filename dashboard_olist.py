@@ -91,49 +91,55 @@ def load_all_data():
         st.error(f"Erro na conexão MySQL: {e}")
         return None
 
-# Interface Sidebar
-st.sidebar.header("🔍 Filtros de Análise")
-
+# Carregamento de Dados Principal
 try:
     with st.spinner('Extraindo dados do servidor...'):
         data = load_all_data()
         if data is None: st.stop()
         orders, payments, reviews, items, products, customers, sellers = data
 
-    # Filtro por Estado
-    all_states = sorted(customers['customer_state'].unique())
-    selected_states = st.sidebar.multiselect("Selecione os Estados (Clientes)", all_states, default=all_states)
-
-    # Aplicação do Filtro
-    customers_filtered = customers[customers['customer_state'].isin(selected_states)]
-    orders_filtered = orders[orders['customer_id'].isin(customers_filtered['customer_id'])]
-    
-    # KPIs baseados nos filtros
+    # Título Principal
     st.title("🚀 Dashboard de Inteligência Olist")
-    
-    # --- PROCESSAMENTO ---
-    delivered = orders_filtered[orders_filtered['order_status'] == 'delivered'].dropna(subset=['order_approved_at', 'order_delivered_customer_date'])
-    delivered['delivery_time'] = (delivered['order_delivered_customer_date'] - delivered['order_approved_at']).dt.days
-    
-    payments_filtered = payments[payments['order_id'].isin(orders_filtered['order_id'])]
-    reviews_filtered = reviews[reviews['order_id'].isin(orders_filtered['order_id'])]
-    items_prod_full = items.merge(products, on='product_id')
-    items_prod = items_prod_full[items_prod_full['order_id'].isin(orders_filtered['order_id'])]
 
     # --- LINHA 1: KPIs ---
     st.subheader("📍 Indicadores Principais")
     kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
     
-    total_rev = payments_filtered['payment_value'].sum()
-    kpi1.metric("Faturamento", f"R$ {total_rev/1e6:.1f}M")
-    kpi2.metric("Média Entrega", f"{delivered['delivery_time'].mean():.1f} d" if not delivered.empty else "N/A")
-    kpi3.metric("Mediana Entrega", f"{delivered['delivery_time'].median():.0f} d" if not delivered.empty else "N/A")
-    kpi4.metric("Satisfação (⭐)", f"{reviews_filtered['review_score'].mean():.2f}" if not reviews_filtered.empty else "N/A")
+    # Processamento Global Inicial para os KPIs (sem filtro)
+    total_rev_global = payments['payment_value'].sum()
+    delivered_global = orders[orders['order_status'] == 'delivered'].dropna(subset=['order_approved_at', 'order_delivered_customer_date'])
+    delivered_global['delivery_time'] = (delivered_global['order_delivered_customer_date'] - delivered_global['order_approved_at']).dt.days
     
-    cust_orders = orders_filtered.merge(customers_filtered, on='customer_id')
-    repurchase_count = cust_orders.groupby('customer_unique_id').size()
-    repurchasers = len(repurchase_count[repurchase_count > 1])
-    kpi5.metric("Clientes Recompra", f"{repurchasers:,}")
+    kpi1.metric("Faturamento", f"R$ {total_rev_global/1e6:.1f}M")
+    kpi2.metric("Média Entrega", f"{delivered_global['delivery_time'].mean():.1f} d")
+    kpi3.metric("Mediana Entrega", f"{delivered_global['delivery_time'].median():.0f} d")
+    kpi4.metric("Satisfação (⭐)", f"{reviews['review_score'].mean():.2f}")
+    
+    cust_orders_global = orders.merge(customers, on='customer_id')
+    repurchase_count_global = cust_orders_global.groupby('customer_unique_id').size()
+    repurchasers_global = len(repurchase_count_global[repurchase_count_global > 1])
+    kpi5.metric("Clientes Recompra", f"{repurchasers_global:,}")
+
+    st.divider()
+
+    # --- BARRA DE FILTROS HORIZONTAL ---
+    st.markdown("### 🔍 Filtre a análise por Estado")
+    all_states = sorted(customers['customer_state'].unique())
+    selected_states = st.multiselect("Selecione os Estados para detalhamento nos gráficos abaixo:", 
+                                     all_states, default=all_states)
+
+    # Aplicação do Filtro para os Gráficos
+    customers_filtered = customers[customers['customer_state'].isin(selected_states)]
+    orders_filtered = orders[orders['customer_id'].isin(customers_filtered['customer_id'])]
+    
+    # Processamento Filtrado para Gráficos
+    orders_filtered_delivered = orders_filtered[orders_filtered['order_status'] == 'delivered'].dropna(subset=['order_approved_at', 'order_delivered_customer_date'])
+    orders_filtered_delivered['delivery_time'] = (orders_filtered_delivered['order_delivered_customer_date'] - orders_filtered_delivered['order_approved_at']).dt.days
+    
+    payments_filtered = payments[payments['order_id'].isin(orders_filtered['order_id'])]
+    reviews_filtered = reviews[reviews['order_id'].isin(orders_filtered['order_id'])]
+    items_prod_full = items.merge(products, on='product_id')
+    items_prod = items_prod_full[items_prod_full['order_id'].isin(orders_filtered['order_id'])]
 
     st.divider()
 
