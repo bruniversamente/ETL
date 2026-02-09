@@ -36,16 +36,20 @@ st.markdown("""
         font-size: 2rem !important;
         font-weight: bold !important;
     }
-    /* Estilo para Cards de Análise (Cinza Escuro e Texto Branco) */
-    div[data-testid="stNotification"] {
-        background-color: #333333;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-    }
-    div[data-testid="stNotification"] p {
+    /* Estilo para Cards de Análise (Cinza Escuro e Texto Branco) - Forçado */
+    div[data-testid="stNotification"], div.stAlert {
+        background-color: #333333 !important;
         color: #ffffff !important;
-        font-size: 0.95rem;
+        border: none !important;
+        border-radius: 8px !important;
+    }
+    div[data-testid="stNotification"] p, div.stAlert p, div.stAlert div {
+        color: #ffffff !important;
+        font-size: 0.95rem !important;
+    }
+    /* Esconder o ícone padrão para um visual mais limpo */
+    div[data-testid="stNotification"] svg, div.stAlert svg {
+        display: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
