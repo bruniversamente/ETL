@@ -13,14 +13,27 @@ st.markdown("""
     .main {
         background-color: #f5f7f9;
     }
-    .stMetric {
+    /* Estilo para centralizar KPIs */
+    [data-testid="stMetric"] {
         background-color: #ffffff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        text-align: center; /* Centralização horizontal */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
-    div[data-testid="stMetricValue"] {
+    [data-testid="stMetricLabel"] {
+        display: flex;
+        justify-content: center;
+        font-weight: bold;
+        color: #5f6368;
+    }
+    [data-testid="stMetricValue"] {
         color: #1a73e8;
+        font-size: 2rem !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -31,15 +44,14 @@ from dotenv import load_dotenv
 # Carrega .env se existir localmente
 load_dotenv()
 
-# Conexão com o Banco de Dados (Seguro para Deploy)
+# Conexão com o Banco de Dados (Simples para funcionar local)
 def get_connection():
-    # Tenta ler do st.secrets (Streamlit Cloud) ou das variáveis de ambiente local (.env)
     return mysql.connector.connect(
-        host=st.secrets.get("DB_HOST", os.getenv("DB_HOST", "ip-45-79-142-173.cloudezapp.io")),
-        port=int(st.secrets.get("DB_PORT", os.getenv("DB_PORT", 3306))),
-        user=st.secrets.get("DB_USER", os.getenv("DB_USER", "alunosqlharve")),
-        password=st.secrets.get("DB_PASSWORD", os.getenv("DB_PASSWORD", "Ed&ktw35j")),
-        database=st.secrets.get("DB_NAME", os.getenv("DB_NAME", "modulosql"))
+        host=os.getenv("DB_HOST", "ip-45-79-142-173.cloudezapp.io"),
+        port=int(os.getenv("DB_PORT", 3306)),
+        user=os.getenv("DB_USER", "alunosqlharve"),
+        password=os.getenv("DB_PASSWORD", "Ed&ktw35j"),
+        database=os.getenv("DB_NAME", "modulosql")
     )
 
 # Cache dos Dados para performance
@@ -178,6 +190,7 @@ try:
         st.plotly_chart(fig_inter, use_container_width=True)
 
     st.success("Dashboard atualizado com sucesso! Todos os 9 desafios estão cobertos visualmente.")
+    st.info("💡 Dica: Se estiver rodando localmente, salve o arquivo e atualize o navegador para ver as mudanças no layout dos KPIs.")
 
 except Exception as e:
     st.error(f"Ocorreu um erro: {e}")
