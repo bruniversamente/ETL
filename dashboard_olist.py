@@ -34,6 +34,18 @@ st.markdown("""
     [data-testid="stMetricValue"] {
         color: #1a73e8;
         font-size: 2rem !important;
+        font-weight: bold !important;
+    }
+    /* Estilo para Cards de Análise (Cinza Escuro e Texto Branco) */
+    div[data-testid="stNotification"] {
+        background-color: #333333;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+    }
+    div[data-testid="stNotification"] p {
+        color: #ffffff !important;
+        font-size: 0.95rem;
     }
     </style>
     """, unsafe_allow_html=True)
