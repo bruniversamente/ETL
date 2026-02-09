@@ -123,14 +123,32 @@ try:
     st.divider()
 
     # --- BARRA DE FILTROS HORIZONTAL ---
-    st.markdown("### 🔍 Filtre a análise por Estado")
-    all_states = sorted(customers['customer_state'].unique())
-    selected_states = st.multiselect("Selecione os Estados para detalhamento nos gráficos abaixo:", 
-                                     all_states, default=all_states)
+    st.markdown("### 🔍 Detalhamento por Estado")
+    
+    state_map = {
+        'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas', 'BA': 'Bahia',
+        'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo', 'GO': 'Goiás',
+        'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul', 'MG': 'Minas Gerais',
+        'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná', 'PE': 'Pernambuco', 'PI': 'Piauí',
+        'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte', 'RS': 'Rio Grande do Sul',
+        'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina', 'SP': 'São Paulo',
+        'SE': 'Sergipe', 'TO': 'Tocantins'
+    }
+    
+    # Inverte o mapa para facilitar a busca por UF
+    reverse_state_map = {v: k for k, v in state_map.items()}
+    
+    full_names = ["Todos os Estados"] + sorted(list(state_map.values()))
+    selected_full_name = st.selectbox("Selecione um estado para analisar os gráficos detalhados:", full_names)
 
     # Aplicação do Filtro para os Gráficos
-    customers_filtered = customers[customers['customer_state'].isin(selected_states)]
-    orders_filtered = orders[orders['customer_id'].isin(customers_filtered['customer_id'])]
+    if selected_full_name == "Todos os Estados":
+        customers_filtered = customers
+        orders_filtered = orders
+    else:
+        selected_uf = reverse_state_map[selected_full_name]
+        customers_filtered = customers[customers['customer_state'] == selected_uf]
+        orders_filtered = orders[orders['customer_id'].isin(customers_filtered['customer_id'])]
     
     # Processamento Filtrado para Gráficos
     orders_filtered_delivered = orders_filtered[orders_filtered['order_status'] == 'delivered'].dropna(subset=['order_approved_at', 'order_delivered_customer_date'])
