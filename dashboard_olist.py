@@ -36,9 +36,9 @@ st.markdown("""
         font-size: 2rem !important;
         font-weight: bold !important;
     }
-    /* Estilo para Cards de Análise (Cinza Escuro e Texto Branco) - Forçado */
+    /* Estilo para Cards de Análise (Cinza Quase Preto e Texto Branco) - Forçado */
     div[data-testid="stNotification"], div.stAlert {
-        background-color: #333333 !important;
+        background-color: #1e1e1e !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 8px !important;
